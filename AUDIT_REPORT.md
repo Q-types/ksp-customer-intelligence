@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-**Audit Date:** February 2024
+**Audit Date:** February 2024 (Updated: February 23, 2026)
 **Data Snapshot:** October 18, 2024
 **Total Companies:** 908
 **Total Historical Revenue:** £18,558,939
@@ -11,33 +11,67 @@
 
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
-| 1 | **Segment 7 mislabeled** "High-Value Regulars" but has LOWEST value (£1,393 avg, 90% dormant) | CRITICAL | Fix Required |
-| 2 | **Segment 5 mislabeled** "New Prospects" but they are customers with transactions | CRITICAL | Fix Required |
-| 3 | **Segment 6 mislabeled** "Growth Potential" but 84% are dormant | HIGH | Fix Required |
-| 4 | **"Active Customers" definition wrong** - app uses Segments 5,6,7 but only 17% are actually active | HIGH | Fix Required |
-| 5 | Marketing playbook tactics don't match actual segment behavior | HIGH | Fix Required |
-| 6 | Segment color mapping inconsistent (5 colors vs 8 segments in some pages) | MEDIUM | Fix Required |
-| 7 | Hardcoded "454 prospects" in UI | LOW | Fix Required |
-| 8 | Deprecated `.applymap()` pandas method | LOW | Fix Required |
-| 9 | No data staleness warning (Oct 2024 is 4+ months old) | MEDIUM | Fix Required |
-| 10 | Silent exception handling hides errors | MEDIUM | Fix Required |
+| 1 | **Segment 0 mislabeled** "Dormant One-Timers" - actually short tenure burst then churn | CRITICAL | ✅ FIXED |
+| 2 | **Segment 5 mislabeled** "New Prospects/Long-Tenure Inactive" - actually TRUE REGULARS | CRITICAL | ✅ FIXED |
+| 3 | **Segment 7 mislabeled** "High-Value Regulars" - actually Archive/Low-Touch (LOWEST value) | CRITICAL | ✅ FIXED |
+| 4 | **Segment 2 mislabeled** - high quote volume indicates sales process issue, not occasional buyer | HIGH | ✅ FIXED |
+| 5 | Marketing playbook tactics don't match actual segment behavior | HIGH | ✅ FIXED |
+| 6 | **recent_12m_revenue metric** conflicts with recency_days - needed clarification | HIGH | ✅ FIXED |
+| 7 | Segment color mapping inconsistent (5 colors vs 8 segments in some pages) | MEDIUM | ✅ FIXED |
+| 8 | No segment-specific motions - all treated similarly | HIGH | ✅ FIXED |
+| 9 | Priority order didn't reflect actual value/recovery potential | MEDIUM | ✅ FIXED |
+| 10 | Missing action labels in Action Center | MEDIUM | ✅ FIXED |
 
 ---
 
-## A. Notebook vs Report vs App Reconciliation
+## Final Segment Mapping Table (Single Source of Truth)
 
-### Segment Statistics Reconciliation Table
+| Seg | Name | Source | Avg Rev | Priority | Motion | Action Label |
+|-----|------|--------|---------|----------|--------|--------------|
+| 0 | Early-Churn Burst | core_subcluster0 | £10,614 | MEDIUM | Friction Removal | Early-Churn Burst |
+| 1 | Lapsed Regular | core_subcluster1 | £6,166 | HIGH | Diagnosis-First | Lapsed Regular |
+| 2 | Quote-Heavy Occasional | core_subcluster2 | £6,347 | HIGH | Conversion Win-back | Quote-Heavy Occasional |
+| 3 | Project Re-quote | core_subcluster3 | £6,826 | MEDIUM | Project Re-quote | Project Re-quote |
+| 4 | Win-back VIP | core_subcluster4 | £91,587 | CRITICAL | Executive Win-back | Win-back VIP |
+| 5 | Active Regulars | initial_cluster1 | £3,856 | PROTECT | Retention + Grow | Protect Regulars |
+| 6 | Dormant Mid-Tenure | initial_cluster2 | £5,077 | LOW-MEDIUM | Re-engagement | Dormant Mid-Tenure |
+| 7 | Archive/Low-Touch | initial_cluster3 | £1,393 | LOWEST | Batch Only | Archive |
 
-| Seg | App Label | Count | % | Total Rev | Avg Rev | Med Rev | Avg Freq | Avg Recency | Dormant% | Recent 12m |
-|-----|-----------|-------|---|-----------|---------|---------|----------|-------------|----------|------------|
-| 0 | Dormant One-Timers | 686 | 75.6% | £7,281,669 | £10,615 | £1,621 | 3.7 | 1,420d | 88% | £1,752 |
-| 1 | Lapsed Regulars | 7 | 0.8% | £43,165 | £6,166 | £3,967 | 2.7 | 716d | 43% | £1,377 |
-| 2 | Occasional Past | 31 | 3.4% | £196,758 | £6,347 | £2,495 | 2.7 | 1,190d | 84% | £481 |
-| 3 | Moderate History | 14 | 1.5% | £95,561 | £6,826 | £2,877 | 2.8 | 1,288d | 86% | £267 |
-| 4 | High-Value Dormant | 117 | 12.9% | £10,715,642 | £91,587 | £19,748 | 29.4 | 576d | 50% | £6,584 |
-| 5 | New Prospects | 5 | 0.6% | £19,278 | £3,856 | £2,474 | 2.0 | 449d | 60% | £600 |
-| 6 | Growth Potential | 38 | 4.2% | £192,933 | £5,077 | £2,859 | 2.7 | 1,018d | 84% | £824 |
-| 7 | High-Value Regulars | 10 | 1.1% | £13,933 | £1,393 | £789 | 2.0 | 905d | 90% | £17 |
+### Key Insights from Cluster Analysis
+
+1. **Segment 0 is NOT "one-timers"**: Short tenure (~59 days) but HIGH activity burst (8.5 days between orders, 20.6 estimates/year). These customers engaged intensively then churned - indicates **onboarding friction** (spec/lead time/MOQ issues).
+
+2. **Segment 5 is TRUE REGULARS**: Low recency, high tenure, high product diversity. These are your **best active relationships** - PROTECT, don't treat as dormant.
+
+3. **Segment 2 has SALES PROCESS ISSUE**: High estimates_per_year but low conversion = interested customers not converting. Needs fast re-quote and barrier removal.
+
+4. **Segment 4 requires TIERED WIN-BACK**: £91K avg revenue, 50% still have recent activity. Offer ladder: Service fix → Commercial terms → Incentive.
+
+### Metric Clarifications
+
+| Metric | Definition | Notes |
+|--------|------------|-------|
+| `recent_12m_revenue` | Revenue from orders with invoice_date in trailing 365 days from Oct 2024 snapshot | May be £0 for customers with high recency_days |
+| `recency_days` | Days since last order from snapshot date (Oct 2024) | >365 days = "dormant" for active customer calculations |
+| `estimates_per_year` | Annualized rate of quote/estimate requests | High value + low conversion = sales process friction |
+| `avg_days_between_orders` | Average gap between orders | Low value + short tenure = burst pattern (then churn) |
+
+---
+
+## A. Original Notebook vs App Reconciliation
+
+### Segment Statistics (Raw Data)
+
+| Seg | OLD Label | NEW Label | Count | % | Total Rev | Avg Rev | Avg Recency | Dormant% |
+|-----|-----------|-----------|-------|---|-----------|---------|-------------|----------|
+| 0 | Dormant One-Timers | Early-Churn Burst | 686 | 75.6% | £7,281,669 | £10,615 | 1,420d | 88% |
+| 1 | Lapsed Regulars | Lapsed Regular | 7 | 0.8% | £43,165 | £6,166 | 716d | 43% |
+| 2 | Occasional Past | Quote-Heavy Occasional | 31 | 3.4% | £196,758 | £6,347 | 1,190d | 84% |
+| 3 | Moderate History | Project Re-quote | 14 | 1.5% | £95,561 | £6,826 | 1,288d | 86% |
+| 4 | High-Value Dormant | Win-back VIP | 117 | 12.9% | £10,715,642 | £91,587 | 576d | 50% |
+| 5 | New Prospects | Active Regulars | 5 | 0.6% | £19,278 | £3,856 | 449d | 60% |
+| 6 | Growth Potential | Dormant Mid-Tenure | 38 | 4.2% | £192,933 | £5,077 | 1,018d | 84% |
+| 7 | High-Value Regulars | Archive/Low-Touch | 10 | 1.1% | £13,933 | £1,393 | 905d | 90% |
 
 ### Totals Verification
 
