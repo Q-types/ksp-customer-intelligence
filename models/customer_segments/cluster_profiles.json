@@ -1,197 +1,183 @@
 {
+  "_metadata": {
+    "description": "Segment profiles from hierarchical K-Means clustering",
+    "source_mapping": {
+      "segments_0_to_4": "ADS core recluster (subclusters of initial mixed cluster 0)",
+      "segments_5_to_7": "Original primary clusters 1, 2, 3 (remapped)"
+    },
+    "key_insights": [
+      "Segment 0: NOT one-timers - short tenure burst then churn (onboarding friction)",
+      "Segment 4: CRITICAL - £91K avg, tiered executive win-back needed",
+      "Segment 5: TRUE REGULARS - low recency, high tenure, PROTECT (not dormant)",
+      "Segment 7: Archive tier - lowest value, near-zero recent activity"
+    ],
+    "metric_notes": {
+      "recent_12m_revenue": "Revenue from orders with invoice_date in trailing 365 days from Oct 2024 snapshot",
+      "recency_days": "Days since last order from snapshot date (Oct 2024)",
+      "estimates_per_year": "Annualized rate of quote requests - high with low conversion indicates sales friction"
+    }
+  },
   "0": {
-    "name": "Dormant One-Timers",
-    "description": "Single or few orders, long time ago. Low engagement history. Win-back unlikely to be cost-effective.",
+    "name": "Early-Churn Burst",
+    "description": "Short tenure (~59 days) but high activity burst. These customers engaged intensively then churned - likely onboarding friction (spec/lead time/quality/MOQ issues).",
+    "source": "core_subcluster0",
     "characteristics": {
-      "monetary_range": "£1,706 avg (lowest value)",
-      "frequency_range": "3.7 orders avg (median 1)",
-      "recency_range": "1,420 days avg (92% dormant)"
+      "monetary_total": "£10,614 avg",
+      "tenure_days": "~59 days (short)",
+      "estimates_per_year": "20.6 avg (high engagement)",
+      "avg_days_between_orders": "8.5 days (frequent during active period)"
     },
     "recommended_actions": [
-      "Batch re-engagement email only",
-      "Remove from active marketing lists",
-      "Consider for seasonal promotions only"
+      "Automated friction-removal CTA",
+      "Survey on onboarding experience",
+      "Address spec/MOQ/lead time concerns",
+      "Escalate only top-value subset"
     ],
-    "engagement_strategy": "Minimal investment - seasonal batch only",
-    "risk_level": "Low Priority",
-    "color": "#9E9E9E",
-    "cluster_stats": {
-      "count": 686,
-      "avg_monetary": 1706,
-      "avg_frequency": 3.7,
-      "avg_recency_days": 1420,
-      "dormant_pct": 92
-    }
+    "motion": "Friction Removal",
+    "risk_level": "MEDIUM - Onboarding Issue",
+    "priority": "MEDIUM",
+    "color": "#FF7043"
   },
   "1": {
-    "name": "Recently Active Small",
-    "description": "Small but active segment. Some recent engagement. Worth nurturing.",
+    "name": "Lapsed Regular",
+    "description": "Previously regular customers who stopped ordering. Need diagnosis before discounting - understand WHY they left.",
+    "source": "core_subcluster1",
     "characteristics": {
-      "monetary_range": "£3,266 avg",
-      "frequency_range": "2.7 orders avg",
-      "recency_range": "Active - recent orders"
+      "monetary_total": "£6,166 avg",
+      "frequency_pattern": "Regular historical pattern",
+      "churn_type": "Recoverable with diagnosis"
     },
     "recommended_actions": [
-      "Monthly touchpoint emails",
-      "Product education content",
-      "Second purchase incentive",
-      "Personal follow-up calls"
+      "Personal phone outreach - diagnosis first",
+      "Avoid discount-first approach",
+      "Understand service/quality/pricing concerns",
+      "Tailored win-back based on feedback"
     ],
-    "engagement_strategy": "Nurture and develop",
-    "risk_level": "Nurture",
-    "color": "#4CAF50",
-    "cluster_stats": {
-      "count": 7,
-      "avg_monetary": 3266,
-      "avg_frequency": 2.7,
-      "avg_recency_days": 180,
-      "dormant_pct": 0
-    }
+    "motion": "Diagnosis-First",
+    "risk_level": "HIGH - Recoverable Value",
+    "priority": "HIGH",
+    "color": "#AB47BC"
   },
   "2": {
-    "name": "Dormant Occasional",
-    "description": "Project-based historical buyers, now inactive. Maintain awareness for next project.",
+    "name": "Quote-Heavy Occasional",
+    "description": "High estimates_per_year but low conversion. This is a SALES PROCESS issue - interested but not converting.",
+    "source": "core_subcluster2",
     "characteristics": {
-      "monetary_range": "£3,649 avg",
-      "frequency_range": "2.7 orders avg",
-      "recency_range": "1,190 days avg (87% dormant)"
+      "monetary_total": "£6,347 avg",
+      "frequency_pattern": "Occasional orders",
+      "estimates_per_year": "High quote volume, low conversion"
     },
     "recommended_actions": [
-      "Quarterly capability updates",
-      "Project inquiry prompts",
-      "Case study sharing"
+      "Review quote-to-order conversion rate",
+      "Fast re-quote with simplified process",
+      "Remove barriers (MOQ, lead time, spec complexity)",
+      "Sales process audit"
     ],
-    "engagement_strategy": "Stay top-of-mind for projects",
-    "risk_level": "Low-Medium",
-    "color": "#9C27B0",
-    "cluster_stats": {
-      "count": 31,
-      "avg_monetary": 3649,
-      "avg_frequency": 2.7,
-      "avg_recency_days": 1190,
-      "dormant_pct": 87
-    }
+    "motion": "Conversion Win-back",
+    "risk_level": "HIGH - Sales Process Issue",
+    "priority": "HIGH",
+    "color": "#5C6BC0"
   },
   "3": {
-    "name": "Dormant Moderate",
-    "description": "Moderate value historical buyers. Content-led nurture back slowly.",
+    "name": "Project Re-quote",
+    "description": "Higher AOV (£6,826) with infrequent, project-based ordering. Maintain awareness for when projects arise.",
+    "source": "core_subcluster3",
     "characteristics": {
-      "monetary_range": "£7,195 avg",
-      "frequency_range": "2.8 orders avg",
-      "recency_range": "1,288 days avg (86% dormant)"
+      "monetary_total": "£6,826 avg (higher AOV)",
+      "frequency_pattern": "Infrequent, project-based",
+      "buying_cycle": "Project cycle dependent"
     },
     "recommended_actions": [
-      "Monthly newsletter",
-      "Industry content sharing",
-      "Personal check-in quarterly"
+      "Semi-personal quarterly outreach",
+      "Project planning check-ins",
+      "Case study and capability updates",
+      "Fast turnaround when project starts"
     ],
-    "engagement_strategy": "Content marketing nurture",
-    "risk_level": "Medium",
-    "color": "#673AB7",
-    "cluster_stats": {
-      "count": 14,
-      "avg_monetary": 7195,
-      "avg_frequency": 2.8,
-      "avg_recency_days": 1288,
-      "dormant_pct": 86
-    }
+    "motion": "Project Re-quote",
+    "risk_level": "MEDIUM - Project Cycle",
+    "priority": "MEDIUM",
+    "color": "#26A69A"
   },
   "4": {
-    "name": "High-Value At-Risk",
-    "description": "CRITICAL: Previously high-value customers now at risk of churning. Urgent win-back required.",
+    "name": "Win-back VIP",
+    "description": "CRITICAL: £91,587 avg revenue. Executive-level tiered win-back with reason-coded churn analysis required.",
+    "source": "core_subcluster4",
     "characteristics": {
-      "monetary_range": "£7,553 avg (high value)",
-      "frequency_range": "4.2 orders avg",
-      "recency_range": "66% dormant - urgent attention needed"
+      "monetary_total": "£91,587 avg (median £19,748)",
+      "frequency_pattern": "29.4 orders avg (high volume)",
+      "recency_days": "576 days avg (50% have recent activity)",
+      "recent_12m_revenue": "£6,584 avg (some still active)"
     },
     "recommended_actions": [
-      "URGENT: Personal phone outreach",
-      "Senior account manager contact",
-      "Premium win-back offer",
-      "Account review meeting",
-      "Understand why they left"
+      "URGENT: Executive outreach within 48 hours",
+      "Tiered offer ladder: Service fix → Commercial terms → Incentive",
+      "Reason-coded churn analysis",
+      "Account review meeting with senior leadership"
     ],
-    "engagement_strategy": "URGENT WIN-BACK - executive outreach",
-    "risk_level": "CRITICAL",
-    "color": "#F44336",
-    "cluster_stats": {
-      "count": 117,
-      "avg_monetary": 7553,
-      "avg_frequency": 4.2,
-      "avg_recency_days": 850,
-      "dormant_pct": 66
-    }
+    "motion": "Executive Win-back",
+    "risk_level": "CRITICAL - Highest Revenue at Risk",
+    "priority": "CRITICAL",
+    "color": "#E53935"
   },
   "5": {
-    "name": "Long-Tenure Inactive",
-    "description": "Very long-term customers (1500+ days recency) who stopped ordering ages ago. Minimal investment warranted.",
+    "name": "Active Regulars",
+    "description": "TRUE REGULARS: Low recency, high tenure, high product diversity. PROTECT and grow - NOT dormant.",
+    "source": "initial_cluster1",
     "characteristics": {
-      "monetary_range": "£3,856 avg",
-      "frequency_range": "Historical orders",
-      "recency_range": "1,500+ days avg (80% dormant)"
+      "monetary_total": "£3,856 avg",
+      "frequency_pattern": "Regular ordering",
+      "recency_days": "LOW (recent orders)",
+      "tenure_days": "HIGH (long relationship)",
+      "product_diversity": "High"
     },
     "recommended_actions": [
-      "Annual check-in email only",
-      "No phone investment",
-      "Include in batch campaigns"
+      "PROTECT: Dedicated account management",
+      "Cross-sell and upsell opportunities",
+      "Loyalty recognition program",
+      "Quarterly business reviews"
     ],
-    "engagement_strategy": "Minimal - annual touch only",
-    "risk_level": "Low Priority",
-    "color": "#607D8B",
-    "cluster_stats": {
-      "count": 5,
-      "avg_monetary": 3856,
-      "avg_frequency": 2.5,
-      "avg_recency_days": 1500,
-      "dormant_pct": 80
-    }
+    "motion": "Retention + Grow",
+    "risk_level": "PROTECT - Core Revenue",
+    "priority": "PROTECT",
+    "color": "#43A047"
   },
   "6": {
     "name": "Dormant Mid-Tenure",
-    "description": "Mid-tenure customers who have become inactive. Worth moderate reactivation effort.",
+    "description": "Had relationship (mid-tenure) but now 84% dormant. Worth moderate re-engagement effort.",
+    "source": "initial_cluster2",
     "characteristics": {
-      "monetary_range": "£3,116 avg",
-      "frequency_range": "2.6 orders avg",
-      "recency_range": "1,100 days avg (84% dormant)"
+      "monetary_total": "£5,077 avg",
+      "frequency_pattern": "2.7 orders avg",
+      "recency_days": "1,018 days avg (84% dormant)"
     },
     "recommended_actions": [
-      "Quarterly reactivation campaigns",
-      "Return incentive offers",
-      "Phone follow-up for engaged"
+      "'We miss you' email sequence",
+      "Special return customer offer",
+      "Quarterly touchpoints"
     ],
-    "engagement_strategy": "Moderate reactivation effort",
-    "risk_level": "Medium",
-    "color": "#FF9800",
-    "cluster_stats": {
-      "count": 38,
-      "avg_monetary": 3116,
-      "avg_frequency": 2.6,
-      "avg_recency_days": 1100,
-      "dormant_pct": 84
-    }
+    "motion": "Re-engagement",
+    "risk_level": "LOW-MEDIUM",
+    "priority": "LOW-MEDIUM",
+    "color": "#FFA726"
   },
   "7": {
-    "name": "Low-Value Dormant",
-    "description": "LOWEST value segment with minimal historical spend. Not worth significant investment.",
+    "name": "Archive/Low-Touch",
+    "description": "Long-cycle, low-value (£1,393 avg), near-zero recent_12m_revenue. True dormant/archive segment.",
+    "source": "initial_cluster3",
     "characteristics": {
-      "monetary_range": "£1,393 avg (LOWEST value)",
-      "frequency_range": "2.1 orders avg",
-      "recency_range": "1,350 days avg (90% dormant)"
+      "monetary_total": "£1,393 avg (LOWEST)",
+      "frequency_pattern": "2.0 orders avg",
+      "recency_days": "Very high (90% dormant)",
+      "recent_12m_revenue": "Near zero"
     },
     "recommended_actions": [
-      "Seasonal batch email only",
+      "Include in batch emails only (2x/year)",
       "No personal outreach",
-      "Minimal marketing investment"
+      "Consider for archive/write-off"
     ],
-    "engagement_strategy": "Batch only - not cost-effective",
-    "risk_level": "Lowest Priority",
-    "color": "#795548",
-    "cluster_stats": {
-      "count": 10,
-      "avg_monetary": 1393,
-      "avg_frequency": 2.1,
-      "avg_recency_days": 1350,
-      "dormant_pct": 90
-    }
+    "motion": "Batch Only",
+    "risk_level": "LOWEST",
+    "priority": "LOWEST",
+    "color": "#78909C"
   }
 }

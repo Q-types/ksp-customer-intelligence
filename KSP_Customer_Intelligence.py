@@ -945,282 +945,303 @@ def render_marketing_playbook():
     st.markdown('<p class="main-header">📧 Marketing Playbook</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Segment-specific marketing strategies and ready-to-use email templates</p>', unsafe_allow_html=True)
 
-    # Marketing Agent Definitions for each segment
+    # Marketing Agent Definitions - segment-specific motions based on cluster analysis
+    # Key insight: Don't lump segments together - each has distinct behavior patterns
     MARKETING_AGENTS = {
         0: {
-            "name": "Dormant One-Timer Specialist",
-            "persona": "Cost-efficient batch marketer focused on minimal investment re-engagement",
-            "strategy": "Low-touch, automated campaigns only. These customers showed minimal commitment - batch emails during seasonal promotions only. Don't invest significant resources.",
-            "timing": "Seasonal only (Q4 holidays, spring refresh)",
-            "channel": "Email only (batch)",
-            "tone": "Friendly reminder, no pressure",
-            "kpi": "Cost per re-activation < £5"
+            "name": "Early-Churn Friction Remover",
+            "persona": "Onboarding specialist focused on identifying and removing friction points",
+            "strategy": "These customers had a short tenure (~59 days) but HIGH activity burst (8.5 days between orders, 20.6 estimates/year) then churned. This indicates ONBOARDING FRICTION - spec complexity, lead times, MOQ, or quality issues. Automated nurture with friction-removal CTA. Only escalate top-value subset.",
+            "timing": "Automated flow + escalate top 10% by value",
+            "channel": "Email automation with friction survey; phone only for top-value",
+            "tone": "Helpful, solution-focused, acknowledge past experience",
+            "kpi": "Friction point identification rate; Top-value re-engagement > 10%",
+            "action_label": "Early-Churn Burst"
         },
         1: {
-            "name": "Win-Back Champion",
-            "persona": "Relationship rebuilder specializing in lapsed regular customer recovery",
-            "strategy": "HIGH PRIORITY. These were loyal customers who stopped. Personal outreach to understand why they left. Offer incentives to return. Survey for feedback.",
-            "timing": "Immediate - within 1 week of identification",
-            "channel": "Phone call first, then personalized email",
-            "tone": "Personal, curious, valued customer",
-            "kpi": "Win-back rate > 15%"
+            "name": "Lapsed Regular Diagnostician",
+            "persona": "Relationship investigator focused on understanding WHY loyal customers left",
+            "strategy": "HIGH PRIORITY. These were regular customers who stopped. DIAGNOSIS FIRST - avoid discount-first default. Personal outreach to understand why they left. Was it service? Quality? Pricing? Competition? Tailored win-back based on their specific issue.",
+            "timing": "Personal outreach within 1 week",
+            "channel": "Phone call first (diagnosis), then tailored follow-up",
+            "tone": "Curious, empathetic, no assumptions",
+            "kpi": "Diagnosis completion rate > 60%; Win-back rate > 15%",
+            "action_label": "Lapsed Regular"
         },
         2: {
-            "name": "Project Opportunity Hunter",
-            "persona": "Project-based sales specialist for occasional buyers",
-            "strategy": "These customers buy for specific projects. Stay top-of-mind with capability updates. Check in quarterly about upcoming projects.",
-            "timing": "Quarterly check-ins",
-            "channel": "Email with phone follow-up",
-            "tone": "Helpful, informative, project-focused",
-            "kpi": "Project inquiry rate > 10%"
+            "name": "Quote Conversion Specialist",
+            "persona": "Sales process optimizer for high-quote, low-conversion customers",
+            "strategy": "HIGH PRIORITY - SALES PROCESS ISSUE. High estimates_per_year but low conversion = they're INTERESTED but not converting. Treat as barrier removal problem. Fast re-quote, simplified process, address MOQ/lead time/spec friction. Sales process audit for this cohort.",
+            "timing": "Immediate re-quote within 48 hours of identification",
+            "channel": "Phone + fast email re-quote; sales process review",
+            "tone": "Efficient, barrier-removing, 'let's make this easy'",
+            "kpi": "Quote-to-order conversion rate improvement; Re-quote response > 25%",
+            "action_label": "Quote-Heavy Occasional"
         },
         3: {
-            "name": "Re-Engagement Nurture Specialist",
-            "persona": "Long-term nurture marketer for moderate history customers",
-            "strategy": "Consistent, valuable content to stay relevant. Industry news, product updates, case studies. Build relationship for when need arises.",
-            "timing": "Monthly newsletter + quarterly personal touch",
-            "channel": "Email nurture sequence",
-            "tone": "Professional, informative, patient",
-            "kpi": "Engagement rate > 20%"
+            "name": "Project Re-quote Manager",
+            "persona": "Project-cycle relationship manager for infrequent high-AOV buyers",
+            "strategy": "Higher AOV (£6,826) with infrequent, project-based ordering. Semi-personal outreach - maintain awareness for when projects arise. Case studies, capability updates, quick response when they're ready.",
+            "timing": "Quarterly semi-personal touchpoints",
+            "channel": "Email with phone follow-up for engaged prospects",
+            "tone": "Consultative, project-aware, ready to respond fast",
+            "kpi": "Project inquiry rate > 15%; Response time when contacted < 4hrs",
+            "action_label": "Project Re-quote"
         },
         4: {
-            "name": "VIP Recovery Director",
-            "persona": "Executive-level relationship manager for high-value dormant accounts",
-            "strategy": "TOP PRIORITY. These were your best customers. Executive outreach, premium return offers, account review meetings. Understand what went wrong.",
-            "timing": "URGENT - within 48 hours",
-            "channel": "Senior person phone call, then meeting",
-            "tone": "Executive, valued partner, concerned",
-            "kpi": "Recovery rate > 25%, revenue recovered"
+            "name": "VIP Executive Recovery Director",
+            "persona": "C-level relationship manager for highest-value at-risk accounts",
+            "strategy": "CRITICAL - £91,587 avg revenue, £10.7M total opportunity. TIERED EXECUTIVE WIN-BACK with reason-coded churn. Offer ladder: 1) Service fix first, 2) Commercial terms, 3) Incentive last. Senior leadership involvement required.",
+            "timing": "URGENT - Executive contact within 48 hours",
+            "channel": "Senior/executive phone call → face-to-face meeting → account review",
+            "tone": "Executive-to-executive, partnership restoration, premium service",
+            "kpi": "Recovery rate > 30%; Revenue recovered £ tracking; Churn reason coded",
+            "action_label": "Win-back VIP"
         },
         5: {
-            "name": "Long-Lost Recovery Specialist",
-            "persona": "Archeological recovery specialist for very old inactive accounts",
-            "strategy": "These are long-tenure but extremely inactive customers (1,500+ days recency). Low-investment check-in to see if circumstances have changed. Don't over-invest - they've been gone a long time.",
-            "timing": "Annual check-in only",
-            "channel": "Simple email - no phone investment",
-            "tone": "Brief, no-pressure, \"just checking in\"",
-            "kpi": "Response rate > 5%"
+            "name": "Active Regulars Account Director",
+            "persona": "Key account manager focused on PROTECTION and growth of best customers",
+            "strategy": "PROTECT - NOT DORMANT! These are your TRUE REGULARS: low recency, high tenure, high product diversity. Dedicated account management, loyalty recognition, cross-sell/upsell, quarterly business reviews. Do NOT treat as re-engagement targets.",
+            "timing": "Proactive monthly touchpoints; quarterly business reviews",
+            "channel": "Dedicated account manager; their preferred channel",
+            "tone": "Partnership, appreciation, growth-focused",
+            "kpi": "Retention rate > 95%; Account growth > 10% YoY; NPS > 50",
+            "action_label": "Protect Regulars"
         },
         6: {
             "name": "Dormant Mid-Range Reactivator",
-            "persona": "Reactivation specialist for mid-tenure dormant accounts",
-            "strategy": "84% dormant, mid-value customers. Moderate investment - quarterly nudge campaigns with relevant offers. Worth some effort but not priority.",
+            "persona": "Re-engagement specialist for mid-tenure dormant accounts",
+            "strategy": "84% dormant, mid-value customers. Moderate investment - quarterly nudge campaigns with relevant offers. Worth some effort but not top priority. 'We miss you' positioning.",
             "timing": "Quarterly campaigns",
-            "channel": "Email with occasional phone for responsive ones",
-            "tone": "Friendly reminder, value-focused",
-            "kpi": "Reactivation rate > 8%"
+            "channel": "Email sequence; phone for responsive ones only",
+            "tone": "Friendly reminder, value-focused, welcome back",
+            "kpi": "Reactivation rate > 8%; Response rate > 10%",
+            "action_label": "Dormant Mid-Tenure"
         },
         7: {
-            "name": "Low-Value Batch Marketer",
-            "persona": "Efficient batch campaign manager for minimal-value dormant accounts",
-            "strategy": "LOWEST value segment (£1,393 avg), 90% dormant. Minimal investment only. Include in seasonal batch campaigns but never personal outreach - not cost-effective.",
+            "name": "Archive Batch Manager",
+            "persona": "Efficient batch campaign manager for archive-tier accounts",
+            "strategy": "LOWEST value (£1,393 avg), near-zero recent_12m_revenue, 90% dormant. True archive tier - minimal investment only. Seasonal batch inclusion but never personal outreach. Consider for write-off if no engagement after 2 campaigns.",
             "timing": "Seasonal batch only (2x per year)",
-            "channel": "Batch email only - no phone, no personal touch",
+            "channel": "Batch email only - zero personal investment",
             "tone": "Generic promotional, no personalization",
-            "kpi": "Cost per contact < £1"
+            "kpi": "Cost per contact < £0.50; Archive after 2 no-response campaigns",
+            "action_label": "Archive"
         }
     }
 
-    # Email Templates
+    # Email Templates - segment-specific messaging based on behavioral analysis
     EMAIL_TEMPLATES = {
         0: {
-            "subject": "Still thinking of you at KSP Packaging",
+            "subject": "Quick question about your KSP experience",
             "body": """Hi {company_name},
 
-It's been a while since we last worked together, and we wanted to reach out.
+I noticed you worked with us intensively for a short period, then we lost touch. I'd love to understand what happened.
 
-At KSP, we've been busy developing new packaging solutions that might be perfect for your next project:
-• New sustainable packaging options
-• Faster turnaround times
-• Competitive pricing for returning customers
+**Quick feedback request (30 seconds):**
+Was it something about:
+• Lead times - too long for your needs?
+• Minimum order quantities - too high?
+• Specification process - too complex?
+• Something else entirely?
 
-If you have any upcoming packaging needs, we'd love to hear from you.
+We've made improvements in all these areas and I'd genuinely value your input.
 
-Best regards,
-The KSP Team
+If you reply with just a few words about what didn't work, I'll personally ensure your next experience is smoother.
 
-P.S. As a previous customer, you'll receive 10% off your next order. Just mention this email."""
+Thanks,
+{sales_rep_name}
+KSP Packaging
+
+P.S. If you'd prefer, just reply with a number: 1=lead times, 2=MOQs, 3=specs, 4=other"""
         },
         1: {
-            "subject": "We miss you, {company_name} - let's reconnect",
+            "subject": "{company_name} - can we talk?",
             "body": """Dear {contact_name},
 
-I noticed it's been over a year since your last order with KSP, and I wanted to personally reach out.
+I noticed {company_name} was a regular customer with us, and then things stopped. I'd genuinely like to understand what happened.
 
-You were one of our valued regular customers, and I'd love to understand what changed. Did we miss something? Has your packaging needs shifted?
+I'm not calling to sell you anything - I'm calling to listen.
 
-I'd genuinely appreciate 5 minutes of your time to:
-• Understand if there's anything we could have done better
-• Update you on improvements we've made
-• Discuss how we might work together again
+**I'd like to understand:**
+• Did we let you down somehow?
+• Did your business needs change?
+• Did you find a better solution elsewhere?
 
-As a thank you for your time, I'd like to offer you a 15% returning customer discount on your next order.
+Your honest feedback helps us improve, regardless of whether we work together again.
 
-Could we schedule a quick call this week?
+Could I call you for 5 minutes this week? I promise: no sales pitch, just listening.
 
-Warm regards,
+Regards,
 {sales_rep_name}
 Account Manager, KSP Packaging
-{phone_number}"""
+{phone_number}
+
+P.S. If you prefer email, just reply and I'll respond the same day."""
         },
         2: {
-            "subject": "Planning any projects? KSP capabilities update",
+            "subject": "Let's make your next order easier - {company_name}",
             "body": """Hi {company_name},
 
-Hope this finds you well. As we enter a new quarter, I wanted to check in and share some updates from KSP that might be relevant for your upcoming projects.
+I can see you've requested several quotes from us but orders haven't followed. I want to fix whatever's getting in the way.
 
-**New Capabilities:**
-• Extended range of sustainable materials
-• Enhanced finishing options (foiling, embossing)
-• Improved lead times - now as fast as 5 working days
+**Let me remove the barriers:**
+• Need faster turnaround? We can prioritize your orders
+• MOQs too high? Let's discuss flexible quantities
+• Spec process too complex? I'll personally handle it
+• Pricing not right? Let's talk about what works for you
 
-**Recent Project Showcase:**
-We recently completed [relevant industry] packaging for [similar company] - happy to share details if interesting.
+Reply to this email with what's holding you back, and I'll get back to you within 4 hours with a solution.
 
-Do you have any projects on the horizon where we could help? Even if it's early stages, I'd be happy to provide budgetary quotes.
+Or if it's easier, just tell me which quote you'd like me to revisit and I'll send a simplified version today.
 
-Best regards,
+{sales_rep_name}
+KSP Packaging
+{phone_number}"""
+        },
+        3: {
+            "subject": "When's your next project? - KSP check-in",
+            "body": """Hi {company_name},
+
+Hope you're well. I know you tend to work with us on a project basis, so I wanted to check in and see what's on the horizon.
+
+**Since we last worked together, we've added:**
+• Faster production - 5-day express available
+• New sustainable options (FSC, recycled materials)
+• Enhanced finishing capabilities
+
+If you have any projects coming up - even early-stage - I'd be happy to provide indicative pricing to help with your planning.
+
+Just reply with a rough brief and I'll turn around a quote within 24 hours.
+
+Best,
 {sales_rep_name}
 KSP Packaging"""
         },
-        3: {
-            "subject": "KSP Packaging Update: Industry trends & new solutions",
-            "body": """Hi {company_name},
-
-I hope this message finds you well. I wanted to share some industry insights and updates from KSP that might be valuable for your business.
-
-**Industry Trends:**
-• Sustainable packaging demand up 40% - we've expanded our eco-friendly range
-• Premium unboxing experiences driving brand loyalty
-• Supply chain improvements reducing lead times
-
-**What's New at KSP:**
-• New bespoke presentation boxes range
-• Enhanced online proofing system
-• Extended payment terms available
-
-We'd love to be considered when your next packaging need arises. Feel free to reach out anytime for a no-obligation quote.
-
-Best regards,
-The KSP Team"""
-        },
         4: {
-            "subject": "Personal message from KSP Leadership - {company_name}",
+            "subject": "Personal message from our Managing Director - {company_name}",
             "body": """Dear {contact_name},
 
-I'm reaching out personally because {company_name} has been one of KSP's most valued customers, and I noticed we haven't had the pleasure of working together recently.
+I'm writing personally because {company_name} represents one of our most valued business relationships, and I'm concerned that we've lost touch.
 
-Your business meant a great deal to us - not just commercially, but as a partnership we genuinely valued. I wanted to understand directly: is there anything we could have done better?
+Before we discuss any commercial matters, I need to understand: did we fail you in some way?
 
-I'd like to offer:
-• A personal account review meeting at your convenience
-• A dedicated account manager going forward
-• Preferred pricing reflecting your history with us
-• Priority production slots for your orders
+**I would like to:**
+1. Arrange a call or meeting at your convenience to understand what happened
+2. Address any outstanding concerns you may have
+3. Discuss how we can rebuild our partnership
 
-Your feedback would be invaluable to me, whether or not you choose to work with us again.
+If service failed, we'll fix it. If terms weren't competitive, we'll review them. If something else happened, I want to know.
 
-Could I arrange a call or meeting this week?
+Your account would receive dedicated senior oversight going forward, with priority access and improved terms.
 
-With sincere regards,
+May I call you this week?
+
+Sincerely,
 {senior_name}
 {senior_title}, KSP Packaging
 {direct_line}"""
         },
         5: {
-            "subject": "Still here if you need us - KSP Packaging",
-            "body": """Hi {company_name},
+            "subject": "Thank you for your continued partnership - {company_name}",
+            "body": """Dear {contact_name},
 
-It's been quite a while since we last worked together, and we wanted to briefly check in.
+I wanted to personally thank you for your ongoing business with KSP. Customers like {company_name} are the foundation of what we do.
 
-A lot has changed at KSP since your last order:
-• Expanded product range
-• Faster turnaround times
-• New sustainable packaging options
+**As a valued regular customer, you have access to:**
+• {rep_name} as your dedicated account manager (direct: {phone_number})
+• Priority production scheduling
+• Early access to new products and materials
+• Quarterly business reviews (let me know if you'd like to schedule one)
 
-If your packaging needs have evolved or you have upcoming projects, we'd be happy to hear from you.
+Is there anything we could be doing better for you? Your feedback directly shapes how we operate.
 
-No pressure - just wanted you to know we're still here.
+I'd also love to explore if there are product areas we haven't discussed - we've expanded significantly and there may be opportunities to consolidate your packaging with us.
 
-Best,
-The KSP Team"""
+Best regards,
+{sales_rep_name}
+Account Director, KSP Packaging"""
         },
         6: {
-            "subject": "Quick update from KSP Packaging",
+            "subject": "We miss working with you - {company_name}",
             "body": """Hi {company_name},
 
-Hope you're well. We noticed it's been a while since your last order with us.
+It's been a while since we heard from you, and we'd love to reconnect.
 
-Just wanted to share a few updates:
-• New competitive pricing on popular items
-• Extended range of eco-friendly options
-• Improved delivery times
+**What's new at KSP:**
+• Improved lead times across all products
+• New competitive pricing structure
+• Extended eco-friendly range
 
-If you have any upcoming packaging needs, we'd love to help.
+As a returning customer, you'd receive preferential pricing on your next order.
 
-As a returning customer, you'll receive preferential pricing on your next order.
+If you have any upcoming needs, or just want to catch up on what's new, I'd be happy to chat.
 
 Best regards,
 The KSP Team"""
         },
         7: {
-            "subject": "Special offer from KSP Packaging",
+            "subject": "Seasonal offer from KSP Packaging",
             "body": """Hi {company_name},
 
-We're running a seasonal promotion and wanted to make sure you didn't miss out.
+Quick update: we're running a seasonal promotion with special pricing.
 
-**This Month Only:**
-• 15% off selected product lines
-• Free delivery on orders over £500
-• Same great quality, better prices
+• Selected product discounts
+• Free delivery on qualifying orders
+• Fast turnaround available
 
-Browse our latest range at [link] or reply to this email if you'd like a quote.
+Visit [link] or reply for a quote.
 
-Thanks,
 KSP Packaging"""
         }
     }
 
-    # Segment names for display - CORRECTED based on actual data analysis
-    SEGMENT_NAMES = {
-        0: "Dormant One-Timers",      # 686 companies, £1,706 avg, 92% dormant
-        1: "Recently Active Small",    # 7 companies, £3,266 avg, active
-        2: "Dormant Occasional",       # 31 companies, £3,649 avg, 87% dormant
-        3: "Dormant Moderate",         # 14 companies, £7,195 avg, 86% dormant
-        4: "High-Value At-Risk",       # 117 companies, £7,553 avg, 66% dormant - CRITICAL
-        5: "Long-Tenure Inactive",     # 5 companies, £3,856 avg, 80% dormant, 1500+ days recency
-        6: "Dormant Mid-Tenure",       # 38 companies, £3,116 avg, 84% dormant
-        7: "Low-Value Dormant"         # 10 companies, £1,393 avg, 90% dormant - LOWEST value
-    }
+    # Import segment configuration from centralized source
+    from services.data_loader import SEGMENT_CONFIG, SEGMENT_COLORS, SEGMENT_NAMES, SEGMENT_PRIORITY_ORDER
 
-    # Colors matching centralized SEGMENT_COLORS in data_loader.py
-    SEGMENT_COLORS = {
-        0: "#9E9E9E",  # Grey - Dormant One-Timers
-        1: "#4CAF50",  # Green - Recently Active Small
-        2: "#9C27B0",  # Purple - Dormant Occasional
-        3: "#673AB7",  # Deep Purple - Dormant Moderate
-        4: "#F44336",  # Red - High-Value At-Risk (CRITICAL)
-        5: "#607D8B",  # Blue-Grey - Long-Tenure Inactive
-        6: "#FF9800",  # Orange - Dormant Mid-Tenure
-        7: "#795548"   # Brown - Low-Value Dormant
-    }
+    # Segment names for display - from centralized config
+    # Segments 0-4: ADS core recluster (subclusters of initial mixed cluster 0)
+    # Segments 5-7: Original primary clusters 1, 2, 3 (remapped)
+    # Key insight: Segment 5 is TRUE REGULARS (low recency, high tenure) - PROTECT
+    #              Segment 0 is Early-Churn Burst (short tenure, high activity burst)
+    #              Segment 4 is Win-back VIP (£91K avg, CRITICAL)
 
     # Tab selection
     tab1, tab2, tab3 = st.tabs(["📋 Strategy Overview", "📧 Email Templates", "🎯 Segment Deep Dive"])
 
     with tab1:
         st.markdown("### Marketing Strategy by Segment")
-        st.markdown("Each segment requires a different approach. Here's the expert strategy for each:")
+        st.markdown("""
+        Each segment requires a **distinct approach** based on their behavioral patterns.
+        Don't lump segments together - the motions are segment-specific.
+        """)
 
-        # Priority order for display - based on actual value and recovery potential
-        # 4 (High-Value At-Risk) first, then by decreasing value/importance
-        priority_order = [4, 3, 1, 2, 6, 5, 7, 0]  # Critical revenue at risk first
+        # Use centralized priority order
+        # Priority: CRITICAL (4, 5), HIGH (1, 2), MEDIUM (0, 3), LOW (6, 7)
+        priority_order = SEGMENT_PRIORITY_ORDER
 
         for seg_id in priority_order:
             agent = MARKETING_AGENTS[seg_id]
+            config = SEGMENT_CONFIG[seg_id]
             color = SEGMENT_COLORS[seg_id]
 
-            with st.expander(f"**{SEGMENT_NAMES[seg_id]}** - {agent['name']}", expanded=(seg_id in [4, 1, 7])):
+            # Show priority badge
+            priority_badge = f"[{config['priority']}]"
+            motion_badge = f"Motion: {config['motion']}"
+
+            with st.expander(f"**{priority_badge} {SEGMENT_NAMES[seg_id]}** - {agent['name']}", expanded=(seg_id in [4, 5, 2])):
+                # Motion header with color coding
+                st.markdown(f"""
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <span style="background: {color}; color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold;">
+                        {config['motion']}
+                    </span>
+                    <span style="background: #f0f0f0; color: #333; padding: 4px 12px; border-radius: 4px;">
+                        Action: {config['action_label']}
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+
                 col1, col2 = st.columns([2, 1])
 
                 with col1:
@@ -1230,7 +1251,7 @@ KSP Packaging"""
                 with col2:
                     st.markdown(f"**Timing:** {agent['timing']}")
                     st.markdown(f"**Channel:** {agent['channel']}")
-                    st.markdown(f"**Target KPI:** {agent['kpi']}")
+                    st.markdown(f"**KPIs:** {agent['kpi']}")
 
     with tab2:
         st.markdown("### Ready-to-Use Email Templates")
