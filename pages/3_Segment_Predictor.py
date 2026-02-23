@@ -8,21 +8,12 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="Segment Predictor", page_icon="🎯", layout="wide")
 
-from services.data_loader import load_cluster_profiles, load_company_data
+from services.data_loader import load_cluster_profiles, load_company_data, SEGMENT_COLORS
 from services.model_service import (
     predict_segment, get_segment_probability_distribution,
     get_feature_importance_for_segment, load_feature_config
 )
 from services.marketing_service import get_strategy_for_segment
-
-# Segment colors
-SEGMENT_COLORS = {
-    0: "#C62828",
-    1: "#7B1FA2",
-    2: "#1976D2",
-    3: "#2E7D32",
-    4: "#F57C00",
-}
 
 
 def main():

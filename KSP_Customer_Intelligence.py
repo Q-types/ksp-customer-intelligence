@@ -551,7 +551,8 @@ def render_prospect_pipeline():
 
     with tab2:
         st.markdown("### Full Prospect Pipeline")
-        st.caption("Filter and search all 454 pre-scored prospects")
+        prospect_count = len(prospects_df) if not prospects_df.empty else 0
+        st.caption(f"Filter and search all {prospect_count:,} pre-scored prospects")
 
         # Filters in 4 columns
         col1, col2, col3, col4 = st.columns(4)
@@ -992,31 +993,31 @@ def render_marketing_playbook():
             "kpi": "Recovery rate > 25%, revenue recovered"
         },
         5: {
-            "name": "New Customer Success Manager",
-            "persona": "Onboarding specialist focused on new customer development",
-            "strategy": "Critical first 90 days. Welcome sequence, product education, first reorder prompt. Build habit and relationship early.",
-            "timing": "Immediate welcome, then 30/60/90 day touches",
-            "channel": "Email sequence + personal call at day 14",
-            "tone": "Welcoming, helpful, educational",
-            "kpi": "Second order rate > 40%"
+            "name": "Long-Lost Recovery Specialist",
+            "persona": "Archeological recovery specialist for very old inactive accounts",
+            "strategy": "These are long-tenure but extremely inactive customers (1,500+ days recency). Low-investment check-in to see if circumstances have changed. Don't over-invest - they've been gone a long time.",
+            "timing": "Annual check-in only",
+            "channel": "Simple email - no phone investment",
+            "tone": "Brief, no-pressure, \"just checking in\"",
+            "kpi": "Response rate > 5%"
         },
         6: {
-            "name": "Growth Acceleration Manager",
-            "persona": "Business development specialist for expanding accounts",
-            "strategy": "These customers are growing - help them grow faster with you. Cross-sell, upsell, range expansion. Business development calls.",
-            "timing": "Monthly touchpoints",
-            "channel": "Phone + email + in-person where possible",
-            "tone": "Partnership, growth-focused, consultative",
-            "kpi": "Account growth > 20% YoY"
+            "name": "Dormant Mid-Range Reactivator",
+            "persona": "Reactivation specialist for mid-tenure dormant accounts",
+            "strategy": "84% dormant, mid-value customers. Moderate investment - quarterly nudge campaigns with relevant offers. Worth some effort but not priority.",
+            "timing": "Quarterly campaigns",
+            "channel": "Email with occasional phone for responsive ones",
+            "tone": "Friendly reminder, value-focused",
+            "kpi": "Reactivation rate > 8%"
         },
         7: {
-            "name": "VIP Account Director",
-            "persona": "Premium account manager for top-tier customers",
-            "strategy": "PROTECT. Dedicated attention, loyalty rewards, priority service, early access to new products. Never let them feel neglected.",
-            "timing": "Weekly check-ins, immediate response always",
-            "channel": "Dedicated contact, any channel they prefer",
-            "tone": "Premium, exclusive, partnership",
-            "kpi": "Retention rate > 95%"
+            "name": "Low-Value Batch Marketer",
+            "persona": "Efficient batch campaign manager for minimal-value dormant accounts",
+            "strategy": "LOWEST value segment (£1,393 avg), 90% dormant. Minimal investment only. Include in seasonal batch campaigns but never personal outreach - not cost-effective.",
+            "timing": "Seasonal batch only (2x per year)",
+            "channel": "Batch email only - no phone, no personal touch",
+            "tone": "Generic promotional, no personalization",
+            "kpi": "Cost per contact < £1"
         }
     }
 
@@ -1127,96 +1128,81 @@ With sincere regards,
 {direct_line}"""
         },
         5: {
-            "subject": "Welcome to KSP! Here's what happens next...",
+            "subject": "Still here if you need us - KSP Packaging",
             "body": """Hi {company_name},
 
-Welcome to KSP Packaging! We're thrilled to have you as a customer.
+It's been quite a while since we last worked together, and we wanted to briefly check in.
 
-**Your Recent Order:**
-Thank you for order #{order_number}. Here's what to expect:
-• Production timeline: {timeline}
-• Delivery date: {delivery_date}
-• Your dedicated contact: {rep_name} ({rep_email})
+A lot has changed at KSP since your last order:
+• Expanded product range
+• Faster turnaround times
+• New sustainable packaging options
 
-**Getting the Most from KSP:**
-• View our full product range: [link]
-• Request samples: [link]
-• Need help? Call us: {phone}
+If your packaging needs have evolved or you have upcoming projects, we'd be happy to hear from you.
 
-**New Customer Offer:**
-Order again within 30 days and receive 10% off your second order - our way of saying thank you for choosing KSP.
+No pressure - just wanted you to know we're still here.
 
-Any questions at all, please don't hesitate to reach out.
-
-Welcome aboard!
-{rep_name}
-KSP Packaging"""
+Best,
+The KSP Team"""
         },
         6: {
-            "subject": "Ideas for {company_name} - let's explore growth together",
-            "body": """Hi {contact_name},
+            "subject": "Quick update from KSP Packaging",
+            "body": """Hi {company_name},
 
-I've been reviewing your account and I'm excited about the growth we've seen together. I wanted to share some ideas that might help accelerate your packaging strategy.
+Hope you're well. We noticed it's been a while since your last order with us.
 
-**Opportunities I've Identified:**
-• Based on your current orders, you might benefit from our {product_suggestion}
-• Customers similar to you have seen success with {cross_sell_item}
-• Volume pricing could reduce your costs by approximately {savings_estimate}
+Just wanted to share a few updates:
+• New competitive pricing on popular items
+• Extended range of eco-friendly options
+• Improved delivery times
 
-**Business Development Meeting:**
-I'd love to schedule a 30-minute call to:
-• Review your upcoming needs and plans
-• Explore product range expansion opportunities
-• Discuss volume arrangements that could benefit both of us
+If you have any upcoming packaging needs, we'd love to help.
 
-Would next week work for a call?
+As a returning customer, you'll receive preferential pricing on your next order.
 
-Looking forward to continuing our partnership,
-{rep_name}
-Business Development, KSP Packaging"""
+Best regards,
+The KSP Team"""
         },
         7: {
-            "subject": "Your VIP status at KSP - {company_name}",
-            "body": """Dear {contact_name},
+            "subject": "Special offer from KSP Packaging",
+            "body": """Hi {company_name},
 
-As one of KSP's most valued partners, I wanted to personally ensure you're receiving the premium service you deserve.
+We're running a seasonal promotion and wanted to make sure you didn't miss out.
 
-**Your VIP Benefits:**
-• Dedicated account manager: {rep_name} (direct: {direct_line})
-• Priority production scheduling
-• Extended payment terms
-• Early access to new products and materials
-• Complimentary samples and prototyping
+**This Month Only:**
+• 15% off selected product lines
+• Free delivery on orders over £500
+• Same great quality, better prices
 
-**Exclusive Offer:**
-We're launching a new premium range next month. As a VIP customer, you're invited to an exclusive preview and first access to orders.
+Browse our latest range at [link] or reply to this email if you'd like a quote.
 
-**Standing Invitation:**
-Please remember - for anything urgent, my direct line is always available to you: {direct_line}
-
-Is there anything we could be doing better for you? Your feedback shapes how we serve our best customers.
-
-With appreciation,
-{senior_rep_name}
-VIP Accounts Director, KSP Packaging"""
+Thanks,
+KSP Packaging"""
         }
     }
 
-    # Segment names for display
+    # Segment names for display - CORRECTED based on actual data analysis
     SEGMENT_NAMES = {
-        0: "Dormant One-Timers",
-        1: "Lapsed Regulars",
-        2: "Occasional Past",
-        3: "Moderate History",
-        4: "High-Value Dormant",
-        5: "New Prospects",
-        6: "Growth Potential",
-        7: "High-Value Regulars"
+        0: "Dormant One-Timers",      # 686 companies, £1,706 avg, 92% dormant
+        1: "Recently Active Small",    # 7 companies, £3,266 avg, active
+        2: "Dormant Occasional",       # 31 companies, £3,649 avg, 87% dormant
+        3: "Dormant Moderate",         # 14 companies, £7,195 avg, 86% dormant
+        4: "High-Value At-Risk",       # 117 companies, £7,553 avg, 66% dormant - CRITICAL
+        5: "Long-Tenure Inactive",     # 5 companies, £3,856 avg, 80% dormant, 1500+ days recency
+        6: "Dormant Mid-Tenure",       # 38 companies, £3,116 avg, 84% dormant
+        7: "Low-Value Dormant"         # 10 companies, £1,393 avg, 90% dormant - LOWEST value
     }
 
+    # Colors matching centralized SEGMENT_COLORS in data_loader.py
     SEGMENT_COLORS = {
-        0: "#9E9E9E", 1: "#E91E63", 2: "#9C27B0", 3: "#673AB7",
-        4: "#C62828", 5: "#00BCD4", 6: "#1976D2", 7: "#2E7D32"
+        0: "#9E9E9E",  # Grey - Dormant One-Timers
+        1: "#4CAF50",  # Green - Recently Active Small
+        2: "#9C27B0",  # Purple - Dormant Occasional
+        3: "#673AB7",  # Deep Purple - Dormant Moderate
+        4: "#F44336",  # Red - High-Value At-Risk (CRITICAL)
+        5: "#607D8B",  # Blue-Grey - Long-Tenure Inactive
+        6: "#FF9800",  # Orange - Dormant Mid-Tenure
+        7: "#795548"   # Brown - Low-Value Dormant
     }
 
     # Tab selection
@@ -1226,8 +1212,9 @@ VIP Accounts Director, KSP Packaging"""
         st.markdown("### Marketing Strategy by Segment")
         st.markdown("Each segment requires a different approach. Here's the expert strategy for each:")
 
-        # Priority order for display
-        priority_order = [4, 1, 7, 6, 5, 2, 3, 0]  # Highest priority first
+        # Priority order for display - based on actual value and recovery potential
+        # 4 (High-Value At-Risk) first, then by decreasing value/importance
+        priority_order = [4, 3, 1, 2, 6, 5, 7, 0]  # Critical revenue at risk first
 
         for seg_id in priority_order:
             agent = MARKETING_AGENTS[seg_id]

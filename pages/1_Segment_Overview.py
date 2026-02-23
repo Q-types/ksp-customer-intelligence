@@ -20,17 +20,8 @@ from services.segment_service import (
     get_segment_health_scores
 )
 
-# Segment colors - 8 segments from hierarchical clustering
-SEGMENT_COLORS = {
-    0: "#9E9E9E",  # Dormant One-Timers - Grey
-    1: "#E91E63",  # Lapsed Regulars - Pink (win-back)
-    2: "#9C27B0",  # Occasional Past - Purple
-    3: "#673AB7",  # Moderate History - Deep Purple
-    4: "#C62828",  # High-Value Dormant - Red (critical)
-    5: "#00BCD4",  # New Prospects - Cyan
-    6: "#1976D2",  # Growth Potential - Blue
-    7: "#2E7D32",  # High-Value Regulars - Green
-}
+# Import centralized segment colors from data_loader (single source of truth)
+from services.data_loader import SEGMENT_COLORS
 
 def main():
     st.title("📊 Segment Overview")

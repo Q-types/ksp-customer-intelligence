@@ -7,20 +7,11 @@ import pandas as pd
 
 st.set_page_config(page_title="Marketing Playbook", page_icon="📈", layout="wide")
 
-from services.data_loader import load_cluster_profiles, load_cluster_assignments
+from services.data_loader import load_cluster_profiles, load_cluster_assignments, SEGMENT_COLORS
 from services.marketing_service import (
     get_marketing_strategies, get_strategy_for_segment,
     get_campaign_recommendations, get_kpis_for_segment
 )
-
-# Segment colors
-SEGMENT_COLORS = {
-    0: "#C62828",
-    1: "#7B1FA2",
-    2: "#1976D2",
-    3: "#2E7D32",
-    4: "#F57C00",
-}
 
 PRIORITY_COLORS = {
     "CRITICAL": "#C62828",

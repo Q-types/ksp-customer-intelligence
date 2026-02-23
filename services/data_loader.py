@@ -13,6 +13,19 @@ DATA_DIR = BASE_DIR / "data" / "companies"
 MODELS_DIR = BASE_DIR / "models" / "customer_segments"
 OUTPUTS_DIR = BASE_DIR / "outputs" / "segmentation"
 
+# Centralized segment colors - single source of truth for all pages
+# Based on QA audit: colors reflect priority/risk, not original assumptions
+SEGMENT_COLORS = {
+    0: "#9E9E9E",  # Grey - Dormant One-Timers (low priority)
+    1: "#4CAF50",  # Green - Recently Active Small (nurture)
+    2: "#9C27B0",  # Purple - Dormant Occasional
+    3: "#673AB7",  # Deep Purple - Dormant Moderate
+    4: "#F44336",  # Red - High-Value At-Risk (CRITICAL)
+    5: "#607D8B",  # Blue-Grey - Long-Tenure Inactive
+    6: "#FF9800",  # Orange - Dormant Mid-Tenure
+    7: "#795548",  # Brown - Low-Value Dormant (lowest priority)
+}
+
 
 @st.cache_data(ttl=3600)
 def load_cluster_profiles() -> dict:
@@ -24,16 +37,17 @@ def load_cluster_profiles() -> dict:
             return json.load(f)
 
     # Fallback profiles - 8 segments from hierarchical clustering
-    # Segments 0-4: subclusters of original dormant cluster
-    # Segments 5-7: original active clusters (remapped)
+    # Segments 0-4: subclusters of original Cluster 0 (855 companies)
+    # Segments 5-7: original primary clusters 1, 2, 3 (remapped)
+    # CORRECTED based on QA audit - labels now match actual data metrics
     return {
         "0": {
             "name": "Dormant One-Timers",
             "description": "Single or few orders, long time ago. Low engagement history. Win-back unlikely to be cost-effective.",
             "characteristics": {
-                "monetary_range": "Low (single order value)",
-                "frequency_range": "1 order only",
-                "recency_range": ">2 years since last order"
+                "monetary_range": "£10,615 avg (median £1,621)",
+                "frequency_range": "3.7 orders avg (median 1)",
+                "recency_range": "1,420 days avg (88% dormant)"
             },
             "recommended_actions": [
                 "Batch re-engagement email only",
@@ -44,116 +58,116 @@ def load_cluster_profiles() -> dict:
             "color": "#9E9E9E"
         },
         "1": {
-            "name": "Lapsed Regulars",
-            "description": "Previously regular customers who stopped ordering. BEST win-back candidates - they know the product.",
+            "name": "Recently Active Small",
+            "description": "Small segment with some recent activity (57% active). Nurture and develop potential.",
             "characteristics": {
-                "monetary_range": "Previously moderate-high",
-                "frequency_range": "Multiple past orders",
-                "recency_range": ">1 year dormant"
+                "monetary_range": "£6,166 avg",
+                "frequency_range": "2.7 orders avg",
+                "recency_range": "716 days avg (43% dormant)"
             },
             "recommended_actions": [
-                "Personal outreach call",
-                "Special return customer offer",
-                "Survey to understand why they left"
+                "Monthly touchpoint emails",
+                "Product education content",
+                "Second purchase incentive"
             ],
-            "risk_level": "Win-Back Priority",
-            "color": "#E91E63"
+            "risk_level": "Nurture",
+            "color": "#4CAF50"
         },
         "2": {
-            "name": "Occasional Past",
-            "description": "Infrequent past customers. Likely project-based needs.",
+            "name": "Dormant Occasional",
+            "description": "Project-based historical buyers, now inactive. Maintain awareness for next project.",
             "characteristics": {
-                "monetary_range": "Variable per project",
-                "frequency_range": "2-3 orders historically",
-                "recency_range": ">1 year"
+                "monetary_range": "£6,347 avg",
+                "frequency_range": "2.7 orders avg",
+                "recency_range": "1,190 days avg (84% dormant)"
             },
             "recommended_actions": [
-                "Quarterly check-in email",
-                "Project inquiry follow-up",
-                "Catalogue/capability updates"
+                "Quarterly capability updates",
+                "Project inquiry prompts",
+                "Case study sharing"
             ],
-            "risk_level": "Medium",
+            "risk_level": "Low-Medium",
             "color": "#9C27B0"
         },
         "3": {
-            "name": "Moderate History",
-            "description": "Some order history but now inactive. Potential for reactivation with right offer.",
+            "name": "Dormant Moderate",
+            "description": "Some order history but now inactive. Content-led nurture back slowly.",
             "characteristics": {
-                "monetary_range": "Mid-range historically",
-                "frequency_range": "Several past orders",
-                "recency_range": ">1 year"
+                "monetary_range": "£6,826 avg",
+                "frequency_range": "2.8 orders avg",
+                "recency_range": "1,288 days avg (86% dormant)"
             },
             "recommended_actions": [
                 "Re-engagement email sequence",
-                "Product update announcements",
-                "Industry news sharing"
+                "Industry news sharing",
+                "Product update announcements"
             ],
             "risk_level": "Medium",
             "color": "#673AB7"
         },
         "4": {
-            "name": "High-Value Dormant",
-            "description": "Previously HIGH VALUE customers now inactive. TOP WIN-BACK PRIORITY - significant revenue recovery potential.",
+            "name": "High-Value At-Risk",
+            "description": "TOP PRIORITY: £92K avg revenue, 50% still engaging. Executive recovery program for £10.7M opportunity.",
             "characteristics": {
-                "monetary_range": "High (>£10,000 historical)",
-                "frequency_range": "Multiple past orders",
-                "recency_range": ">1 year dormant"
+                "monetary_range": "£91,587 avg (median £19,748)",
+                "frequency_range": "29.4 orders avg (median 10)",
+                "recency_range": "576 days avg (50% dormant)"
             },
             "recommended_actions": [
-                "Executive/senior outreach",
-                "Premium return incentive",
-                "Account review meeting request"
+                "Executive outreach within 48 hours",
+                "Account review meeting request",
+                "Premium return incentive"
             ],
-            "risk_level": "Critical - High Value",
-            "color": "#C62828"
+            "risk_level": "CRITICAL",
+            "color": "#F44336"
         },
         "5": {
-            "name": "New Prospects",
-            "description": "Recently acquired customers with limited order history. Potential for development.",
+            "name": "Long-Tenure Inactive",
+            "description": "Old customers (1,722 day tenure) with minimal recent engagement. Light-touch re-engagement.",
             "characteristics": {
-                "monetary_range": "Low-moderate (early stage)",
-                "frequency_range": "1-2 orders",
-                "recency_range": "Recent activity"
+                "monetary_range": "£3,856 avg",
+                "frequency_range": "2.0 orders avg",
+                "recency_range": "449 days avg (60% dormant)"
             },
             "recommended_actions": [
-                "Welcome onboarding sequence",
-                "Introductory consultation offer",
-                "Product range showcase"
+                "Quarterly check-in email",
+                "Capability reminder",
+                "Low-cost re-engagement"
             ],
-            "risk_level": "Nurture",
-            "color": "#00BCD4"
+            "risk_level": "Low",
+            "color": "#607D8B"
         },
         "6": {
-            "name": "Growth Potential",
-            "description": "Active customers showing growth trajectory. Expansion opportunity.",
+            "name": "Dormant Mid-Tenure",
+            "description": "Had relationship but 84% now dormant. Re-engagement targets with special return offers.",
             "characteristics": {
-                "monetary_range": "Mid-range (£5,000-£20,000)",
-                "frequency_range": "Regular ordering",
-                "recency_range": "Active (<6 months)"
+                "monetary_range": "£5,077 avg",
+                "frequency_range": "2.7 orders avg",
+                "recency_range": "1,018 days avg (84% dormant)"
             },
             "recommended_actions": [
-                "Business development call",
-                "Cross-sell campaign",
-                "Product range expansion"
+                "'We miss you' email sequence",
+                "Special return customer offer",
+                "Quarterly touchpoints"
             ],
-            "risk_level": "Opportunity",
-            "color": "#1976D2"
+            "risk_level": "Medium",
+            "color": "#FF9800"
         },
         "7": {
-            "name": "High-Value Regulars",
-            "description": "Premium customers - your best accounts. PROTECT these relationships.",
+            "name": "Low-Value Dormant",
+            "description": "Lowest value segment (£1,393 avg), highest dormancy (90%). Minimal marketing investment.",
             "characteristics": {
-                "monetary_range": "Top tier (>£20,000)",
-                "frequency_range": "Frequent orders (10+)",
-                "recency_range": "Active (<3 months)"
+                "monetary_range": "£1,393 avg (LOWEST)",
+                "frequency_range": "2.0 orders avg",
+                "recency_range": "905 days avg (90% dormant)"
             },
             "recommended_actions": [
-                "Dedicated account manager",
-                "Loyalty rewards program",
-                "Priority service and new product access"
+                "Include in batch emails only",
+                "No personal outreach",
+                "Consider for write-off"
             ],
-            "risk_level": "Protect",
-            "color": "#2E7D32"
+            "risk_level": "Very Low",
+            "color": "#795548"
         }
     }
 

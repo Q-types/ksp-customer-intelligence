@@ -11,20 +11,11 @@ st.set_page_config(page_title="Company Explorer", page_icon="🏢", layout="wide
 
 from services.data_loader import (
     load_cluster_profiles, load_company_data, load_cluster_assignments,
-    get_company_details, get_companies_by_segment
+    get_company_details, get_companies_by_segment, SEGMENT_COLORS
 )
 from services.segment_service import (
     search_companies, get_top_companies_by_segment
 )
-
-# Segment colors
-SEGMENT_COLORS = {
-    0: "#C62828",
-    1: "#7B1FA2",
-    2: "#1976D2",
-    3: "#2E7D32",
-    4: "#F57C00",
-}
 
 
 def main():

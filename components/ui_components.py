@@ -5,19 +5,15 @@ Consistent styling and functionality across the dashboard
 import streamlit as st
 from typing import Dict, List, Optional, Any
 
+# Import centralized segment colors
+from services.data_loader import SEGMENT_COLORS
+
 
 # =============================================================================
 # COLOR CONSTANTS
 # =============================================================================
 
 COLORS = {
-    # Segment colors
-    'at_risk': '#C62828',
-    'new_prospects': '#7B1FA2',
-    'growth_potential': '#1976D2',
-    'high_value': '#2E7D32',
-    'occasional': '#F57C00',
-
     # Tier colors
     'hot': '#C62828',
     'warm': '#F57C00',
@@ -25,9 +21,9 @@ COLORS = {
     'cold': '#9E9E9E',
 
     # Status colors
-    'critical': '#C62828',
-    'warning': '#F57C00',
-    'success': '#2E7D32',
+    'critical': '#F44336',
+    'warning': '#FF9800',
+    'success': '#4CAF50',
     'info': '#1976D2',
     'neutral': '#666666',
 
@@ -39,13 +35,7 @@ COLORS = {
     'border': '#e0e0e0'
 }
 
-SEGMENT_COLORS = {
-    0: COLORS['at_risk'],
-    1: COLORS['new_prospects'],
-    2: COLORS['growth_potential'],
-    3: COLORS['high_value'],
-    4: COLORS['occasional']
-}
+# SEGMENT_COLORS imported from services.data_loader (single source of truth)
 
 TIER_COLORS = {
     'Hot': COLORS['hot'],

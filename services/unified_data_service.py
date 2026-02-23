@@ -76,73 +76,79 @@ def load_prospect_data() -> pd.DataFrame:
 
 @st.cache_data(ttl=3600)
 def load_segment_profiles() -> Dict:
-    """Load segment profile definitions - 8 segments from hierarchical clustering"""
+    """Load segment profile definitions - 8 segments from hierarchical clustering
+
+    CORRECTED based on QA audit (Feb 2024):
+    - Labels now match actual data metrics
+    - Segments 5, 6, 7 are NOT "active" - most are dormant
+    - See AUDIT_REPORT.md for full reconciliation
+    """
     return {
-        # Subclusters of original dormant customers (0-4)
+        # Subclusters of original Cluster 0 (855 companies split into 5)
         0: {
             "name": "Dormant One-Timers",
-            "description": "Single/few orders, long time ago. Low engagement history. Win-back unlikely.",
+            "description": "686 companies. Single/few orders, 1,420 days avg recency. 88% dormant. Low win-back ROI.",
             "color": "#9E9E9E",
             "risk_level": "Low Priority",
             "icon": "⚪",
-            "actions": ["Batch re-engagement email", "Remove from active lists", "Seasonal promotion only"]
+            "actions": ["Batch re-engagement email only", "Remove from active lists", "Seasonal promotion only"]
         },
         1: {
-            "name": "Lapsed Regulars",
-            "description": "Previously regular customers who stopped. Best win-back candidates.",
-            "color": "#E91E63",
-            "risk_level": "Win-Back Priority",
-            "icon": "💔",
-            "actions": ["Personal outreach call", "Special return offer", "Survey for feedback"]
+            "name": "Recently Active Small",
+            "description": "7 companies. 57% still active (lowest dormancy). Small but engaged segment.",
+            "color": "#4CAF50",
+            "risk_level": "Nurture",
+            "icon": "🌱",
+            "actions": ["Monthly touchpoints", "Product education", "Second purchase incentive"]
         },
         2: {
-            "name": "Occasional Past",
-            "description": "Infrequent past customers. Project-based needs.",
+            "name": "Dormant Occasional",
+            "description": "31 companies. Project-based historical buyers. 84% dormant. Maintain awareness.",
             "color": "#9C27B0",
-            "risk_level": "Medium",
+            "risk_level": "Low-Medium",
             "icon": "🔮",
-            "actions": ["Quarterly check-in", "Project inquiry", "Catalogue update"]
+            "actions": ["Quarterly capability updates", "Project inquiry prompts", "Case study sharing"]
         },
         3: {
-            "name": "Moderate History",
-            "description": "Some order history but inactive. Potential for reactivation.",
+            "name": "Dormant Moderate",
+            "description": "14 companies. Some history but 86% dormant. Content-led nurture.",
             "color": "#673AB7",
             "risk_level": "Medium",
             "icon": "📊",
-            "actions": ["Re-engagement sequence", "Product update email", "Industry news sharing"]
+            "actions": ["Re-engagement sequence", "Industry news sharing", "Product updates"]
         },
         4: {
-            "name": "High-Value Dormant",
-            "description": "Previously high-value customers now inactive. TOP WIN-BACK PRIORITY.",
-            "color": "#C62828",
-            "risk_level": "Critical - High Value",
+            "name": "High-Value At-Risk",
+            "description": "117 companies. £92K avg revenue, 50% still engage. TOP PRIORITY: £10.7M recovery opportunity.",
+            "color": "#F44336",
+            "risk_level": "CRITICAL",
             "icon": "🔴",
-            "actions": ["Executive outreach", "Premium return incentive", "Account review meeting"]
+            "actions": ["Executive outreach within 48h", "Account review meeting", "Premium return incentive"]
         },
-        # Original clusters 1, 2, 3 mapped to 5, 6, 7
+        # Original primary clusters 1, 2, 3 mapped to 5, 6, 7
         5: {
-            "name": "New Prospects",
-            "description": "Recently acquired customers. Onboarding and relationship building.",
-            "color": "#00BCD4",
-            "risk_level": "Nurture",
-            "icon": "🆕",
-            "actions": ["Welcome sequence", "Intro consultation", "Product showcase"]
+            "name": "Long-Tenure Inactive",
+            "description": "5 companies. Old customers (1,722 day tenure) with minimal recent activity. 60% dormant.",
+            "color": "#607D8B",
+            "risk_level": "Low",
+            "icon": "⏳",
+            "actions": ["Quarterly check-in", "Capability reminder", "Low-cost re-engagement"]
         },
         6: {
-            "name": "Growth Potential",
-            "description": "Active customers with expansion opportunity. GROW these accounts.",
-            "color": "#1976D2",
-            "risk_level": "Opportunity",
-            "icon": "📈",
-            "actions": ["Business development call", "Cross-sell campaign", "Range expansion"]
+            "name": "Dormant Mid-Tenure",
+            "description": "38 companies. Had relationship but 84% now dormant. Re-engagement targets.",
+            "color": "#FF9800",
+            "risk_level": "Medium",
+            "icon": "🔄",
+            "actions": ["'We miss you' sequence", "Special return offer", "Quarterly touchpoints"]
         },
         7: {
-            "name": "High-Value Regulars",
-            "description": "Premium active customers. PROTECT and nurture these VIPs.",
-            "color": "#2E7D32",
-            "risk_level": "Protect",
-            "icon": "⭐",
-            "actions": ["Dedicated account manager", "Loyalty rewards", "Priority service"]
+            "name": "Low-Value Dormant",
+            "description": "10 companies. LOWEST value (£1,393 avg), 90% dormant. Minimal investment.",
+            "color": "#795548",
+            "risk_level": "Very Low",
+            "icon": "📉",
+            "actions": ["Batch emails only", "No personal outreach", "Consider for write-off"]
         }
     }
 
@@ -157,18 +163,18 @@ def calculate_churn_risk(row: pd.Series) -> float:
     recency = row.get('recency_days', 0)
     frequency = row.get('frequency', 1)
 
-    # 8-segment risk mapping from hierarchical clustering
-    # Segments 0-4: subclusters of original dormant cluster (high risk)
-    # Segments 5-7: original clusters 1-3 (active customers)
+    # 8-segment risk mapping from hierarchical clustering (CORRECTED per QA audit)
+    # Note: Segments 5, 6, 7 are NOT truly "active" - most are dormant
+    # Risk is based on actual dormancy rates and value from data analysis
     segment_base_risk = {
-        0: 90,   # Dormant One-Timers - highest risk, low value
-        1: 75,   # Lapsed Regulars - win-back priority
-        2: 70,   # Occasional Past - moderate risk
-        3: 65,   # Moderate History - some risk
-        4: 85,   # High-Value Dormant - critical win-back
-        5: 30,   # New Prospects - nurture phase
-        6: 25,   # Growth Potential - active, low risk
-        7: 15,   # High-Value Regulars - protect, lowest risk
+        0: 90,   # Dormant One-Timers - 88% dormant, low value
+        1: 45,   # Recently Active Small - only 43% dormant (best active rate)
+        2: 75,   # Dormant Occasional - 84% dormant
+        3: 75,   # Dormant Moderate - 86% dormant
+        4: 70,   # High-Value At-Risk - 50% dormant but high value (PRIORITY)
+        5: 60,   # Long-Tenure Inactive - 60% dormant
+        6: 75,   # Dormant Mid-Tenure - 84% dormant
+        7: 85,   # Low-Value Dormant - 90% dormant, lowest value
     }.get(int(segment) if pd.notna(segment) else 0, 50)
 
     # Minor recency adjustment
@@ -266,13 +272,14 @@ def get_daily_priorities() -> Dict:
             'priority_tier', 'packaging_need', 'region'
         ]].to_dict('records')
 
-    # EXPANSION OPPORTUNITIES: Active customers who could buy more
-    # Segments 5, 6, 7 are the active ones (New Prospects, Growth Potential, High-Value Regulars)
+    # EXPANSION OPPORTUNITIES: Recently active customers who could buy more
+    # CORRECTED: Use recency-based activity, not segment IDs
+    # Segments 1 (57% active) and 4 (50% active) have most recent activity
     expansion_candidates = customers[
-        customers['ads_cluster'].isin([5, 6, 7])  # Active segments
+        customers['recency_days'] <= 365  # Actually active in last year
     ].copy()
     if not expansion_candidates.empty:
-        # Score by frequency potential and recent activity
+        # Score by value and recency
         expansion_candidates['expansion_score'] = (
             expansion_candidates['monetary_total'] +
             (365 - expansion_candidates['recency_days'].clip(upper=365)) * 10
@@ -283,13 +290,13 @@ def get_daily_priorities() -> Dict:
     else:
         expansion = []
 
-    # METRICS - 8-segment model
-    # Active: 5 (New Prospects), 6 (Growth Potential), 7 (High-Value Regulars)
-    # Win-back priority: 1 (Lapsed Regulars), 4 (High-Value Dormant)
-    # Low priority dormant: 0 (One-Timers), 2 (Occasional), 3 (Moderate History)
-    active_customers = customers[customers['ads_cluster'].isin([5, 6, 7])]
-    winback_priority = customers[customers['ads_cluster'].isin([1, 4])]
-    low_priority_dormant = customers[customers['ads_cluster'].isin([0, 2, 3])]
+    # METRICS - 8-segment model (CORRECTED per QA audit)
+    # Active: based on recency (<=365 days), not segment ID
+    # Win-back priority: 1 (Recently Active), 4 (High-Value At-Risk)
+    # Low priority: 0, 2, 3, 5, 6, 7 (mostly dormant, lower value)
+    active_customers = customers[customers['recency_days'] <= 365]  # ~160 companies
+    winback_priority = customers[customers['ads_cluster'].isin([1, 4])]  # Best ROI
+    low_priority_dormant = customers[customers['ads_cluster'].isin([0, 2, 3, 5, 6, 7]) & (customers['recency_days'] > 365)]
 
     metrics = {
         'total_customers': len(customers),
