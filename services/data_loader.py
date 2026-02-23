@@ -8,16 +8,16 @@ Segments 0-4: ADS Core Recluster (subclusters of initial mixed cluster 0)
 Segments 5-7: Original primary clusters 1, 2, 3 (remapped)
 
 Final Mapping Table:
-| Segment | Source           | Name                    | Avg Value | Priority    | Motion               |
-|---------|------------------|-------------------------|-----------|-------------|----------------------|
-| 0       | core_subcluster0 | Early-Churn Burst       | £10,614   | MEDIUM      | Friction removal     |
-| 1       | core_subcluster1 | Lapsed Regular          | £6,166    | HIGH        | Diagnosis-first      |
-| 2       | core_subcluster2 | Quote-Heavy Occasional  | £6,347    | HIGH        | Conversion win-back  |
-| 3       | core_subcluster3 | Project Re-quote        | £6,826    | MEDIUM      | Semi-personal        |
-| 4       | core_subcluster4 | Win-back VIP            | £91,587   | CRITICAL    | Executive win-back   |
-| 5       | initial_cluster1 | Active Regulars         | £3,856    | PROTECT     | Retention + grow     |
-| 6       | initial_cluster2 | Dormant Mid-Tenure      | £5,077    | LOW-MEDIUM  | Re-engagement        |
-| 7       | initial_cluster3 | Archive/Low-Touch       | £1,393    | LOWEST      | Batch only           |
+| Segment | Source           | Name                      | Median £  | Priority    | Motion               |
+|---------|------------------|---------------------------|-----------|-------------|----------------------|
+| 0       | core_subcluster0 | Early-Churn Burst         | £1,621    | MEDIUM      | Friction removal     |
+| 1       | core_subcluster1 | Lapsed Regular            | £3,967    | HIGH        | Diagnosis-first      |
+| 2       | core_subcluster2 | High-Cadence Lapsed       | £2,495    | HIGH        | Win-back             |
+| 3       | core_subcluster3 | Project Re-quote          | £2,877    | MEDIUM      | Semi-personal        |
+| 4       | core_subcluster4 | Win-back VIP              | £19,748   | CRITICAL    | Executive win-back   |
+| 5       | initial_cluster1 | Long-Tenure Relationship  | £2,474    | PROTECT     | Retention + grow     |
+| 6       | initial_cluster2 | Dormant Mid-Tenure        | £2,859    | LOW-MEDIUM  | Re-engagement        |
+| 7       | initial_cluster3 | Archive/Low-Touch         | £789      | LOWEST      | Batch only           |
 
 METRIC NOTES:
 - recent_12m_revenue: Computed from orders with invoice_date in trailing 365 days from
@@ -37,8 +37,17 @@ MODELS_DIR = BASE_DIR / "models" / "customer_segments"
 OUTPUTS_DIR = BASE_DIR / "outputs" / "segmentation"
 
 # =============================================================================
+# GLOBAL ACTIVE CUSTOMER DEFINITION
+# =============================================================================
+# Active = recency_days <= ACTIVE_THRESHOLD (configurable)
+# This applies across ALL segments, not just Segment 5
+ACTIVE_THRESHOLD_DAYS = 365  # Configurable: customers with last order within this period
+
+# =============================================================================
 # SEGMENT CONFIGURATION - SINGLE SOURCE OF TRUTH
 # =============================================================================
+# NOTE: is_active is computed per-customer using recency_days <= ACTIVE_THRESHOLD_DAYS
+# The segment-level pct_active shows what % of each segment is currently active
 
 SEGMENT_CONFIG = {
     0: {
@@ -47,10 +56,17 @@ SEGMENT_CONFIG = {
         "source": "core_subcluster0",
         "color": "#FF7043",  # Deep Orange - onboarding friction
         "priority": "MEDIUM",
-        "priority_rank": 3,
+        "priority_rank": 4,  # Lower than HIGH segments
         "motion": "Friction Removal",
         "action_label": "Early-Churn Burst",
-        "is_active": False,  # Behavior-based: recency > 365
+        # Computed metrics (from data):
+        "pct_active": 12.0,  # 82/686 with recency <= 365
+        "median_recency_days": 1432,
+        "mean_recency_days": 1420,
+        "median_monetary": 1621,  # Use median to avoid skew
+        "mean_monetary": 10615,
+        "orders_per_year_median": 1.0,  # Most are one-time
+        "orders_per_year_mean": 20.6,   # Skewed by burst buyers
     },
     1: {
         "name": "Lapsed Regular",
@@ -58,21 +74,34 @@ SEGMENT_CONFIG = {
         "source": "core_subcluster1",
         "color": "#AB47BC",  # Purple - diagnosis needed
         "priority": "HIGH",
-        "priority_rank": 2,
+        "priority_rank": 3,
         "motion": "Diagnosis-First",
         "action_label": "Lapsed Regular",
-        "is_active": False,
+        "pct_active": 57.1,  # 4/7 with recency <= 365
+        "median_recency_days": 327,
+        "mean_recency_days": 716,
+        "median_monetary": 3967,
+        "mean_monetary": 6166,
+        "orders_per_year_median": 4.84,
+        "orders_per_year_mean": 4.05,
     },
     2: {
-        "name": "Quote-Heavy Occasional",
-        "short_name": "Quote-Heavy",
+        "name": "High-Cadence Lapsed",
+        "short_name": "High-Cadence",
         "source": "core_subcluster2",
-        "color": "#5C6BC0",  # Indigo - sales process issue
+        "color": "#5C6BC0",  # Indigo - high activity pattern
         "priority": "HIGH",
-        "priority_rank": 2,
-        "motion": "Conversion Win-back",
-        "action_label": "Quote-Heavy Occasional",
-        "is_active": False,
+        "priority_rank": 3,
+        "motion": "Win-back",
+        "action_label": "High-Cadence Lapsed",
+        "pct_active": 16.1,  # 5/31 with recency <= 365
+        "median_recency_days": 1192,
+        "mean_recency_days": 1190,
+        "median_monetary": 2495,
+        "mean_monetary": 6347,
+        "orders_per_year_median": 18.73,  # HIGHEST historical activity rate
+        "orders_per_year_mean": 22.04,
+        # NOTE: High historical activity (18.7 orders/year) but now 84% dormant
     },
     3: {
         "name": "Project Re-quote",
@@ -80,10 +109,16 @@ SEGMENT_CONFIG = {
         "source": "core_subcluster3",
         "color": "#26A69A",  # Teal - project-based
         "priority": "MEDIUM",
-        "priority_rank": 3,
+        "priority_rank": 4,
         "motion": "Project Re-quote",
         "action_label": "Project Re-quote",
-        "is_active": False,
+        "pct_active": 14.3,  # 2/14 with recency <= 365
+        "median_recency_days": 1129,
+        "mean_recency_days": 1288,
+        "median_monetary": 2877,
+        "mean_monetary": 6826,
+        "orders_per_year_median": 9.34,
+        "orders_per_year_mean": 8.63,
     },
     4: {
         "name": "Win-back VIP",
@@ -91,21 +126,35 @@ SEGMENT_CONFIG = {
         "source": "core_subcluster4",
         "color": "#E53935",  # Red - CRITICAL
         "priority": "CRITICAL",
-        "priority_rank": 1,
+        "priority_rank": 1,  # Highest priority for win-back
         "motion": "Executive Win-back",
         "action_label": "Win-back VIP",
-        "is_active": False,  # 50% still have recent_12m_revenue
+        "pct_active": 49.6,  # 58/117 with recency <= 365 (VERIFIED)
+        "median_recency_days": 415,
+        "mean_recency_days": 576,
+        "median_monetary": 19748,  # Use median - less skewed
+        "mean_monetary": 91587,   # Mean skewed by outliers
+        "orders_per_year_median": 2.70,
+        "orders_per_year_mean": 6.05,
     },
     5: {
-        "name": "Active Regulars",
-        "short_name": "Regulars",
+        "name": "Long-Tenure Relationship",
+        "short_name": "Relationship",
         "source": "initial_cluster1",
-        "color": "#43A047",  # Green - PROTECT
+        "color": "#43A047",  # Green - relationship focus
         "priority": "PROTECT",
-        "priority_rank": 1,
+        "priority_rank": 2,  # High priority but separate from CRITICAL win-back
         "motion": "Retention + Grow",
-        "action_label": "Protect Regulars",
-        "is_active": True,  # Low recency, high tenure, high diversity
+        "action_label": "Protect Relationship",
+        "pct_active": 40.0,  # 2/5 with recency <= 365
+        "median_recency_days": 375,
+        "mean_recency_days": 449,
+        "median_monetary": 2474,
+        "mean_monetary": 3856,
+        "orders_per_year_median": 0.44,
+        "orders_per_year_mean": 0.43,
+        "mean_tenure_days": 1722,  # Long-term relationships
+        # NOTE: Long tenure (1722d) - relationship-heavy cohort worth protecting
     },
     6: {
         "name": "Dormant Mid-Tenure",
@@ -113,10 +162,16 @@ SEGMENT_CONFIG = {
         "source": "initial_cluster2",
         "color": "#FFA726",  # Orange - re-engagement
         "priority": "LOW-MEDIUM",
-        "priority_rank": 4,
+        "priority_rank": 5,
         "motion": "Re-engagement",
         "action_label": "Dormant Mid-Tenure",
-        "is_active": False,
+        "pct_active": 15.8,  # 6/38 with recency <= 365
+        "median_recency_days": 840,
+        "mean_recency_days": 1018,
+        "median_monetary": 2859,
+        "mean_monetary": 5077,
+        "orders_per_year_median": 1.63,
+        "orders_per_year_mean": 1.97,
     },
     7: {
         "name": "Archive/Low-Touch",
@@ -124,10 +179,16 @@ SEGMENT_CONFIG = {
         "source": "initial_cluster3",
         "color": "#78909C",  # Blue Grey - lowest priority
         "priority": "LOWEST",
-        "priority_rank": 5,
+        "priority_rank": 6,
         "motion": "Batch Only",
         "action_label": "Archive",
-        "is_active": False,
+        "pct_active": 10.0,  # 1/10 with recency <= 365
+        "median_recency_days": 724,
+        "mean_recency_days": 905,
+        "median_monetary": 789,  # LOWEST
+        "mean_monetary": 1393,
+        "orders_per_year_median": 0.65,
+        "orders_per_year_mean": 0.75,
     },
 }
 
@@ -135,35 +196,87 @@ SEGMENT_CONFIG = {
 SEGMENT_COLORS = {seg_id: cfg["color"] for seg_id, cfg in SEGMENT_CONFIG.items()}
 SEGMENT_NAMES = {seg_id: cfg["name"] for seg_id, cfg in SEGMENT_CONFIG.items()}
 
-# Priority order for display (rank 1 = highest priority)
+# Priority order for display
+# CRITICAL (Seg 4) first, then PROTECT (Seg 5), then HIGH, MEDIUM, LOW
+# This keeps win-back and retention visually separated in UI
 SEGMENT_PRIORITY_ORDER = sorted(
     SEGMENT_CONFIG.keys(),
     key=lambda x: (SEGMENT_CONFIG[x]["priority_rank"], -x)
 )
+# Result: [4, 5, 1, 2, 0, 3, 6, 7]
 
-# Metric tooltips for UI
+# Metric tooltips for UI - clarified definitions
 METRIC_TOOLTIPS = {
+    "monetary_total": (
+        "Total historic revenue per company (all-time). "
+        "UI displays MEDIAN by default to avoid outlier skew."
+    ),
     "recent_12m_revenue": (
-        "Revenue from orders placed in the 12 months before Oct 2024 snapshot. "
-        "May be £0 for customers who haven't ordered in over a year."
+        "Revenue from orders with invoice_date in trailing 365 days from Oct 2024 snapshot. "
+        "Will be £0 for companies with recency_days > 365 (no orders in window)."
     ),
     "recency_days": (
         "Days since last order (from Oct 2024 snapshot). "
-        ">365 days = 'dormant' for active customer calculations."
+        f"Active customer = recency_days ≤ {ACTIVE_THRESHOLD_DAYS}."
     ),
-    "estimates_per_year": (
-        "Annualized rate of quote/estimate requests. "
-        "High value with low conversion may indicate sales process friction."
+    "pct_active": (
+        f"Percentage of segment with recency_days ≤ {ACTIVE_THRESHOLD_DAYS}. "
+        "Computed from actual data, not assumed."
+    ),
+    "orders_per_year": (
+        "Annualized order frequency. When mean >> median, indicates skewed distribution "
+        "(few high-activity customers pulling up average)."
     ),
     "avg_days_between_orders": (
-        "Average gap between orders. Low value + short tenure may indicate "
-        "onboarding burst followed by churn."
+        "Average gap between orders. Low value + short tenure = "
+        "burst ordering pattern (high activity, then churn)."
     ),
     "tenure_days": (
-        "Days between first order and last order. "
-        "Short tenure + high activity = burst pattern."
+        "Days between first and last order. "
+        "Short tenure + high orders_per_year = burst pattern."
     ),
 }
+
+
+def get_active_customers(df, threshold=None):
+    """
+    Get active customers (recency_days <= threshold) from dataframe.
+
+    Args:
+        df: DataFrame with 'recency_days' column
+        threshold: Days threshold (default: ACTIVE_THRESHOLD_DAYS)
+
+    Returns:
+        DataFrame of active customers only
+    """
+    if threshold is None:
+        threshold = ACTIVE_THRESHOLD_DAYS
+    if 'recency_days' not in df.columns:
+        return df
+    return df[df['recency_days'] <= threshold]
+
+
+def get_active_count_by_segment(df, threshold=None):
+    """
+    Get active customer count per segment.
+
+    Returns dict: {segment_id: (active_count, total_count, pct_active)}
+    """
+    if threshold is None:
+        threshold = ACTIVE_THRESHOLD_DAYS
+
+    results = {}
+    if 'ads_cluster' not in df.columns or 'recency_days' not in df.columns:
+        return results
+
+    for seg_id in df['ads_cluster'].dropna().unique():
+        seg_data = df[df['ads_cluster'] == seg_id]
+        total = len(seg_data)
+        active = (seg_data['recency_days'] <= threshold).sum()
+        pct = (active / total * 100) if total > 0 else 0
+        results[int(seg_id)] = (active, total, pct)
+
+    return results
 
 
 @st.cache_data(ttl=3600)
@@ -219,21 +332,20 @@ def load_cluster_profiles() -> dict:
             "color": "#AB47BC"
         },
         "2": {
-            "name": "Quote-Heavy Occasional",
-            "description": "High estimates_per_year suggests frequent quoting but low conversion. This is a SALES PROCESS issue - they're interested but not converting. Focus on barrier removal and fast re-quoting.",
+            "name": "High-Cadence Lapsed",
+            "description": "Highest historical activity (18.7 orders/year median) but now 84% dormant. Were highly engaged when active - worth win-back effort.",
             "characteristics": {
-                "monetary_range": "£6,347 avg",
-                "frequency_range": "Occasional orders",
-                "estimates_per_year": "High quote volume, low conversion"
+                "monetary_range": "£2,495 median (£6,347 mean)",
+                "frequency_range": "18.7 orders/year median (highest historically)",
+                "recency_range": "1,192 days median (84% dormant)"
             },
             "recommended_actions": [
-                "Review quote-to-order conversion rate",
+                "Win-back with barrier removal focus",
                 "Fast re-quote with simplified process",
-                "Remove barriers (MOQ, lead time, spec complexity)",
-                "Sales process audit for this cohort"
+                "Review historical patterns for personalization"
             ],
-            "risk_level": "HIGH - Sales Process Issue",
-            "motion": "Conversion Win-back",
+            "risk_level": "HIGH - Win-back Priority",
+            "motion": "Win-back",
             "color": "#5C6BC0"
         },
         "3": {
@@ -256,42 +368,39 @@ def load_cluster_profiles() -> dict:
         },
         "4": {
             "name": "Win-back VIP",
-            "description": "CRITICAL: £91,587 avg revenue, 50% still have recent_12m engagement. £10.7M total opportunity. Executive-level tiered win-back with reason-coded churn analysis.",
+            "description": "CRITICAL: Highest value (median £19,748, mean £91,587). 49.6% still active (58/117 verified with recency <= 365). Executive-level tiered win-back required.",
             "characteristics": {
-                "monetary_range": "£91,587 avg (median £19,748)",
-                "frequency_range": "29.4 orders avg (high volume)",
-                "recency_range": "576 days avg (50% have recent activity)",
-                "recent_12m_revenue": "£6,584 avg (indicates some still active)"
+                "monetary_range": "£19,748 median (£91,587 mean)",
+                "frequency_range": "2.70 orders/year median",
+                "recency_range": "415 days median (49.6% active)",
+                "total_segment_revenue": "£10.7M opportunity"
             },
             "recommended_actions": [
                 "URGENT: Executive outreach within 48 hours",
                 "Tiered offer ladder: Service fix → Commercial terms → Incentive",
                 "Reason-coded churn analysis for each account",
-                "Account review meeting with senior leadership",
-                "Premium return package with dedicated support"
+                "Account review meeting with senior leadership"
             ],
             "risk_level": "CRITICAL - Highest Revenue at Risk",
             "motion": "Executive Win-back",
             "color": "#E53935"
         },
         "5": {
-            "name": "Active Regulars",
-            "description": "TRUE REGULARS: Low recency, high tenure, high product diversity. These are your best active relationships - PROTECT and grow, don't treat as dormant.",
+            "name": "Long-Tenure Relationship",
+            "description": "Long-tenure cohort (1722d avg tenure). 40% currently active. Relationship-heavy segment - protect and grow.",
             "characteristics": {
-                "monetary_range": "£3,856 avg",
-                "frequency_range": "Regular ordering",
-                "recency_range": "LOW recency (recent orders)",
-                "tenure_days": "HIGH tenure (long relationship)",
-                "product_diversity": "High (engaged across product lines)"
+                "monetary_range": "£2,474 median (£3,856 mean)",
+                "frequency_range": "0.44 orders/year median",
+                "recency_range": "375 days median (40% active)",
+                "tenure_days": "1,722 days avg (long relationship)"
             },
             "recommended_actions": [
                 "PROTECT: Dedicated account management",
                 "Cross-sell and upsell opportunities",
                 "Loyalty recognition program",
-                "Quarterly business reviews",
-                "Early access to new products"
+                "Quarterly business reviews"
             ],
-            "risk_level": "PROTECT - Core Revenue",
+            "risk_level": "PROTECT - Relationship Value",
             "motion": "Retention + Grow",
             "color": "#43A047"
         },

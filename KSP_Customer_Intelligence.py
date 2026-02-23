@@ -969,14 +969,14 @@ def render_marketing_playbook():
             "action_label": "Lapsed Regular"
         },
         2: {
-            "name": "Quote Conversion Specialist",
-            "persona": "Sales process optimizer for high-quote, low-conversion customers",
-            "strategy": "HIGH PRIORITY - SALES PROCESS ISSUE. High estimates_per_year but low conversion = they're INTERESTED but not converting. Treat as barrier removal problem. Fast re-quote, simplified process, address MOQ/lead time/spec friction. Sales process audit for this cohort.",
-            "timing": "Immediate re-quote within 48 hours of identification",
-            "channel": "Phone + fast email re-quote; sales process review",
+            "name": "High-Cadence Win-back Specialist",
+            "persona": "Win-back specialist for historically high-cadence customers now lapsed",
+            "strategy": "HIGH PRIORITY. Highest historical activity (18.7 orders/year median) - these customers were highly engaged before going dormant (84% now inactive). Worth win-back effort: fast re-quote, barrier removal, review historical patterns for personalization.",
+            "timing": "Proactive outreach within 1 week of identification",
+            "channel": "Phone + fast email re-quote",
             "tone": "Efficient, barrier-removing, 'let's make this easy'",
-            "kpi": "Quote-to-order conversion rate improvement; Re-quote response > 25%",
-            "action_label": "Quote-Heavy Occasional"
+            "kpi": "Win-back rate > 15%; Re-quote response > 25%",
+            "action_label": "High-Cadence Lapsed"
         },
         3: {
             "name": "Project Re-quote Manager",
@@ -999,14 +999,14 @@ def render_marketing_playbook():
             "action_label": "Win-back VIP"
         },
         5: {
-            "name": "Active Regulars Account Director",
-            "persona": "Key account manager focused on PROTECTION and growth of best customers",
-            "strategy": "PROTECT - NOT DORMANT! These are your TRUE REGULARS: low recency, high tenure, high product diversity. Dedicated account management, loyalty recognition, cross-sell/upsell, quarterly business reviews. Do NOT treat as re-engagement targets.",
+            "name": "Long-Tenure Relationship Director",
+            "persona": "Key account manager for long-tenure relationship-heavy customers",
+            "strategy": "PROTECT. Long-tenure cohort (1722d avg tenure). 40% currently active (2/5). Relationship-heavy segment - dedicated account management, loyalty recognition, cross-sell/upsell. Do NOT treat as re-engagement targets.",
             "timing": "Proactive monthly touchpoints; quarterly business reviews",
             "channel": "Dedicated account manager; their preferred channel",
             "tone": "Partnership, appreciation, growth-focused",
             "kpi": "Retention rate > 95%; Account growth > 10% YoY; NPS > 50",
-            "action_label": "Protect Regulars"
+            "action_label": "Protect Relationship"
         },
         6: {
             "name": "Dormant Mid-Range Reactivator",
